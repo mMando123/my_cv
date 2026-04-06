@@ -1,15 +1,11 @@
 const $ = (q, root = document) => root.querySelector(q);
 const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
-
-const API_BASE = "/api";
-
 const state = {
   typing: {
     titles: [
-      "IT Specialist | ERP & ECM Systems",
       "IT Help Desk Specialist",
-      "Windows Server & Linux Support",
-      "Networking Troubleshooting (CCNA-level)"
+      "Network Administrator",
+      "ERP & ECM Support"
     ],
     idx: 0,
     char: 0,
@@ -334,7 +330,7 @@ function initContactForm(){
   const form = $("#contactForm");
   if (!form) return;
 
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const name = (new FormData(form).get("name") || "").toString().trim();
@@ -346,41 +342,17 @@ function initContactForm(){
       return;
     }
 
-    try{
-      showToast("Sending...");
-      await fetchJson(`${API_BASE}/contact/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message })
-      });
+    try {
+      showToast("Opening email client...");
+      const subject = encodeURIComponent(`New Contact from ${name}`);
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+      window.location.href = `mailto:mohamednail891@gmail.com?subject=${subject}&body=${body}`;
 
       form.reset();
-      showToast("Message sent successfully");
-    }catch(e2){
-      showToast(e2 && e2.message ? e2.message : "Failed to send");
+    } catch(e2) {
+      showToast("Failed to open email client");
     }
   });
-}
-
-async function fetchJson(url, options = {}){
-  const res = await fetch(url, options);
-  const text = await res.text();
-  let data = null;
-
-  try{
-    data = text ? JSON.parse(text) : null;
-  }catch(_e){
-    data = text;
-  }
-
-  if (!res.ok){
-    const msg = (data && typeof data === "object" && (data.detail || data.error))
-      ? (data.detail || data.error)
-      : `Request failed (${res.status})`;
-    throw new Error(msg);
-  }
-
-  return data;
 }
 
 function renderSkills(items){
@@ -458,20 +430,28 @@ function renderProjects(items){
   initToasts();
 }
 
-async function initApiData(){
-  try{
-    const skills = await fetchJson(`${API_BASE}/skills/`);
-    renderSkills(skills);
-  }catch(_e){
-    // ignore
-  }
+function initApiData(){
+  const skills = [
+    { name: "OS: Windows Server, Linux (Ubuntu, Kali)", level: 85 },
+    { name: "Networking (CCNA-level)", level: 80 },
+    { name: "IT Support & Ticketing Systems", level: 90 },
+    { name: "Cybersecurity Fundamentals", level: 70 },
+    { name: "ERP Support & Implementation", level: 85 },
+    { name: "DB/Web: SQL, PHP, MySQL", level: 75 }
+  ];
+  renderSkills(skills);
 
-  try{
-    const projects = await fetchJson(`${API_BASE}/projects/`);
-    renderProjects(projects);
-  }catch(_e){
-    // ignore
-  }
+  const projects = [
+    {
+      badge: "Web App",
+      title: "Educational Website for Teaching Arabic to Non-Native Speakers",
+      description: "Developed a comprehensive educational website aimed at teaching the Arabic language. Managed the database and handled the back-end development.",
+      role: "Backend & Database Developer",
+      technologies_list: ["SQL", "PHP", "MySQL"],
+      link: "#"
+    }
+  ];
+  renderProjects(projects);
 }
 
 function initKonami(){
@@ -603,11 +583,12 @@ function initTerminal(){
 
   const lines = [
     '{',
-    '  "os": ["Windows Server", "Linux", "Red Hat"],',
-    '  "network": "CCNA-level troubleshooting",',
-    '  "security": "Fundamentals",',
-    '  "web": ["PHP", "MySQL", "SQL"],',
-    '  "systems": ["ERP Implementations", "ECM Systems"]',
+    '  "os": ["Windows Server", "Linux (Ubuntu, Kali linux)"],',
+    '  "networking": "CCNA-level (Routing, Switching, Troubleshooting)",',
+    '  "support": ["Help Desk", "Ticketing Systems", "Remote Support"],',
+    '  "security": ["Fundamentals", "Vulnerability Awareness"],',
+    '  "erp": "ERP Support & Implementation",',
+    '  "dev": ["Python", "SQL", "PHP", "MySQL"]',
     '}'
   ];
 
